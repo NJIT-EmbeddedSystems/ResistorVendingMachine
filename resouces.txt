@@ -14,3 +14,6 @@ https://blog.podkalicki.com/how-to-compile-and-burn-the-code-to-avr-chip-on-linu
 https://retrobench.fandom.com/wiki/Programming_Arduino_in_Assembly
 https://github.com/vancegroup-mirrors/avr-libc/tree/master/avr-libc
 https://github.com/arduino/ArduinoCore-avr
+https://learn.sparkfun.com/tutorials/serial-peripheral-interface-spi/all
+https://retrobench.fandom.com/wiki/Programming_Arduino_in_Assembly
+
