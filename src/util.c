@@ -48,6 +48,12 @@ static unsigned digitalPinMap[] = { // Maps digital pin value on board to Pin Ma
     21, 20, 19
 };
 
+inline void nop() {
+	asm volatile(
+	"nop"
+	);
+}
+
 // Converts digital pin value (0-53) to index for the Pin Map Table
 unsigned digitalPinToHardware( unsigned pin ) {
     return digitalPinMap[ pin ];
@@ -58,25 +64,31 @@ unsigned analogPinToHardware( unsigned pin ) {
     return 97-pin;
 }
 
-static inline void digitalPinModeLowlevel( volatile uint16_t *reg, volatile uint16_t *port, uint8_t pin, unsigned mode ) {
+static inline void pinModeLowLevel( volatile uint16_t *reg, volatile uint16_t *port, uint8_t pin, unsigned mode ) {
 	if( mode == INPUT ) {
+		uint8_t oldSREG = SREG;
 		*reg  &= ~(1 << pin);
-		*port &= ~(1 << pin);	
+		*port &= ~(1 << pin);
+		SREG = oldSREG;	
 	} else if( mode == INPUT_PULLUP ) {
+		uint8_t oldSREG = SREG;
 		*reg &= ~(1 << pin);
 		*port |= (1 << pin);
+		SREG = oldSREG;
 	} else {
 		*reg |= (1 << pin);
 	}
+	nop();
 }
 
 void digitalPinMode( unsigned pin, enum PinMode mode ) {
     PinMap mappedPin = pinMapTable[ digitalPinToHardware( pin ) ];
-	digitalPinModeLowlevel( (uint16_t *)(mappedPin.reg), (uint16_t *)(mappedPin.port), mappedPin.bitOffset, mode );
+	pinModeLowLevel( (uint16_t *)mappedPin.reg, (uint16_t *)mappedPin.port, mappedPin.bitOffset, mode );
 }
 
 void analogPinMode( unsigned pin, enum PinMode mode ) {
-
+	PinMap mappedPin = pinMapTable[ analogPinToHardware( pin ) ];
+	pinModeLowLevel( (uint16_t *)mappedPin.reg, (uint16_t *)mappedPin.port, mappedPin.bitOffset, mode );
 };
 
 void pinMode( unsigned pin, enum PinType type, enum PinMode mode ) {
@@ -92,8 +104,7 @@ static inline void digitalWriteLowlevel( volatile uint16_t *port, uint8_t pin, u
 }
 
 void digitalWrite( unsigned pin, unsigned value ) {
-	unsigned index = digitalPinToHardware( pin );
-    PinMap mappedPin = pinMapTable[ index ];
+    PinMap mappedPin = pinMapTable[ digitalPinToHardware( pin ) ];
 	digitalWriteLowlevel( (uint16_t *)mappedPin.port, mappedPin.bitOffset, value );
 }
 
@@ -102,8 +113,15 @@ unsigned digitalRead( unsigned pin ) {
     return (mappedPin.port >> mappedPin.bitOffset) & 0x1;
 }
 
-void analogWrite( unsigned pin, unsigned value ) {
+void analogWrite( unsigned pin, uint8_t value ) {
+	PinMap mappedPin = pinMapTable[ analogPinToHardware( pin ) ];
+	if( value == 0 ) {
+		digitalWriteLowlevel( (uint16_t *)&mappedPin.port, mappedPin.bitOffset, 0 );
+	} else if( value == 255 ) {
+		digitalWriteLowlevel( (uint16_t *)&mappedPin.port, mappedPin.bitOffset, 1 );
+	} else {
 
+	}
 }
 
 unsigned analogRead( unsigned pin ) {

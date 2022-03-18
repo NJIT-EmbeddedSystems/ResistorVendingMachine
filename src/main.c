@@ -10,9 +10,9 @@ int main( void ) {
 
     while( 1 ) {
         digitalWrite( 12, HIGH );
-		_delay_ms( 2000 );
+		_delay_ms( 1000 );
         digitalWrite( 12, LOW );
-        _delay_ms( 2000 );
+        _delay_ms( 1000 );
     }
 
     return 0;
