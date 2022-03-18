@@ -3,7 +3,8 @@
 
 #include <avr/io.h>
 
-void spiMasterInit();
+void spiMasterInit( unsigned csPin );
+void spiAddDevice( unsigned csPin );
 
 void spiWriteByte( unsigned csPin, uint8_t byte );
 
