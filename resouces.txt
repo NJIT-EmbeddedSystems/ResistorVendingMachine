@@ -16,4 +16,5 @@ https://github.com/vancegroup-mirrors/avr-libc/tree/master/avr-libc
 https://github.com/arduino/ArduinoCore-avr
 https://learn.sparkfun.com/tutorials/serial-peripheral-interface-spi/all
 https://retrobench.fandom.com/wiki/Programming_Arduino_in_Assembly
-
+http://www.dejazzer.com/ee379/lecture_notes/lec12_sd_card.pdf
+https://www.renesas.com/us/en/document/apn/sd-memory-card-interface-using-spi
