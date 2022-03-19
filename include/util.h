@@ -1,6 +1,7 @@
 #ifndef _UTIL_H
 #define _UTIL_H
 
+#define F_CPU 16000000
 #include <avr/io.h>
 
 enum PinMode {
