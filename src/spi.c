@@ -26,6 +26,13 @@ void spiWriteByte( unsigned csPin, uint8_t byte ) {
 	digitalWrite( csPin, HIGH );
 }
 
+uint8_t spiReadByte( unsigned csPin ) {
+	digitalWrite( csPin, LOW );	
+	uint8_t message = SPDR;
+	digitalWrite( csPin, HIGH );
+	return message;
+}
+
 void spiSetDataOrder( enum SpiDataOrder order ) {
 	if( order == LSB ) {
 		SPCR |= (1 << DORD);
