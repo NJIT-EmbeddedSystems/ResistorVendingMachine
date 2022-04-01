@@ -1,0 +1,36 @@
+#ifndef _OLED_H
+#define _OLED_H
+
+#include <Adafruit_SSD1351.h>
+
+#define OLED_SCREEN_WIDTH	128
+#define OLED_SCREEN_HEIGHT	128
+
+#define OLED_BLACK		0x0000
+#define OLED_BLUE		0x001F
+#define OLED_RED		0xF800
+#define OLED_GREEN		0x07E0
+#define OLED_CYAN		0x07FF
+#define OLED_MAGENTA	0xF81F
+#define OLED_YELLOW		0xFFE0
+#define OLED_WHITE		0xFFFF
+
+enum OledRotation {
+	CLOCKWISE_90 = 1,
+	CLOCKWISE_180 = 2,
+	CLOCKWISE_270 = 3,
+	COUNTER_CLOCKWISE_90 = 3,
+	COUNTER_CLOCKWISE_180 = 2,
+	COUNTER_CLOCKWISE_270 = 1,
+};
+
+extern static Adafruit_SSD1351 oled;
+
+void oledInitialize();
+void oledSetTimeout( unsigned milliseconds );
+void oledSetRotation( enum OledRotation rotation ); 
+
+void oledDisplayResistor();
+
+
+#endif /* _OLED_H */
