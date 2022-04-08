@@ -14,8 +14,7 @@ byte rowPins[ROWS] = {22,24,26,28};
 byte colPins[COLS] = {23,25,27,29}; 
 
 bool color_mode = false;
-String key_log;
-char exp_log;
+String key_log, exp_log;
 
 Keypad customKeypad = Keypad(makeKeymap(hexaKeys), rowPins, colPins, ROWS, COLS); 
 
@@ -23,7 +22,7 @@ void setup(){
   Serial.begin(9600);
 }
 
-void key_event(String &key_log, char &exp_log, char key){
+void key_event(String &key_log, String &exp_log, char key){
     switch (key){
       case 'u':
         break;
@@ -36,21 +35,21 @@ void key_event(String &key_log, char &exp_log, char key){
         break;
       case 'e':
         // turn on led and clear vars
-        key_log ="";
-        exp_log =NULL;
+        key_log = "";
+        exp_log = "";
         break;
       case 'E':
         if(key_log.length() == 0){
           color_mode != color_mode;
         }else{
-          if(exp_log == '1'){
-            exp_log = '3';
-          }else if (exp_log == '3'){
-            exp_log = '6';
-          }else if (exp_log == '6'){
-            exp_log = '1';
+          if(exp_log == "Ω"){
+            exp_log = "kΩ";
+          }else if (exp_log == "kΩ"){
+            exp_log = "MΩ";
+          }else if (exp_log == "MΩ"){
+            exp_log = "Ω";
           }else{
-            exp_log = '1';
+            exp_log = "Ω";
           }
         }
         break;
@@ -62,10 +61,8 @@ void key_event(String &key_log, char &exp_log, char key){
 
 void loop(){
   char customKey = customKeypad.getKey();
-  
   if (customKey){
     key_event(key_log,exp_log,customKey);
     Serial.println(key_log +" "+ exp_log);
-    //Serial.println(customKey);
   }
 }
