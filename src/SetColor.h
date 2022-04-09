@@ -20,7 +20,7 @@
 
 void colorInit();
 void ledOn(int moduleNum, int drawerNum);
-void ledOff(int moduleNum, int draerNum);
+void ledOff(int moduleNum, int drawerNum);
 void setGreen(int moduleNum, int drawerNum);
 void setYellow(int moduleNum, int drawerNum);
 void setRed(int moduleNum, int drawerNum);

@@ -1,5 +1,5 @@
 #include "Arduino.h"
-#include "SetColor.cpp"
+#include "SetColor.h"
 
 void colorInit(){
   // begin serial for debugging
@@ -56,7 +56,7 @@ void setGreen(int moduleNum, int drawerNum){
 }
 void setYellow(int moduleNum, int drawerNum){
     Serial.println("Setting color yellow");
-    analogWrite(R_CTRL, 0); // R is fully off
+    analogWrite(R_CTRL, 0); // R is fully on
     analogWrite(G_CTRL, 0); // G is fully on
     analogWrite(B_CTRL, 255); // B is fully off
 }
