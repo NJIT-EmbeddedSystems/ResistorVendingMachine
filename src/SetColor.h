@@ -14,15 +14,18 @@
 #define SLAVE_S2 38
 
 // RGB ctrl pins hooked up to cathodes on LEDs
-#define R_CTRL
-#define G_CTRL
-#define B_CTRL
+#define R_CTRL 3
+#define G_CTRL 4
+#define B_CTRL 5
+
 
 void colorInit();
 void ledOn(int moduleNum, int drawerNum);
-void ledOff(int moduleNum, int drawerNum);
-void setGreen(int moduleNum, int drawerNum);
-void setYellow(int moduleNum, int drawerNum);
-void setRed(int moduleNum, int drawerNum);
+
+//Removed unused parameters in below functions
+void ledOff();
+void setGreen();
+void setYellow();
+void setRed();
 
 #endif

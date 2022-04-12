@@ -1,4 +1,5 @@
 #include "Arduino.h"
+#include "SoftwareSerial.h"
 #include "SetColor.h"
 
 void colorInit(){
@@ -42,25 +43,25 @@ void ledOn(int moduleNum, int drawerNum){
 
 }
 
-void ledOff(int moduleNum, int ledNum){
+void ledOff(){
     // turn of master decoder, which turns off all LEDs
     Serial.println("Turn all LED off");
     digitalWrite(MASTER_EN, LOW);
 }
 
-void setGreen(int moduleNum, int drawerNum){
+void setGreen(){
     Serial.println("Setting color green");
     analogWrite(R_CTRL, 255); // R is fully off
     analogWrite(G_CTRL, 0); // G is fully on
     analogWrite(B_CTRL, 255); // B is fully off
 }
-void setYellow(int moduleNum, int drawerNum){
+void setYellow(){
     Serial.println("Setting color yellow");
     analogWrite(R_CTRL, 0); // R is fully on
     analogWrite(G_CTRL, 0); // G is fully on
     analogWrite(B_CTRL, 255); // B is fully off
 }
-void setRed(int moduleNum, int drawerNum){
+void setRed(){
     Serial.println("Setting color red");
     analogWrite(R_CTRL, 0); // R is fully on
     analogWrite(G_CTRL, 255); // G is fully off
