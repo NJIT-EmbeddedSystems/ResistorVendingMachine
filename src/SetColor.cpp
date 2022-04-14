@@ -57,7 +57,7 @@ void setGreen(){
 }
 void setYellow(){
     Serial.println("Setting color yellow");
-    analogWrite(R_CTRL, 0); // R is fully on
+    analogWrite(R_CTRL, 120); // R  overpowers so 120 makes yellow
     analogWrite(G_CTRL, 0); // G is fully on
     analogWrite(B_CTRL, 255); // B is fully off
 }
