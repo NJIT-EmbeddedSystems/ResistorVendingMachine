@@ -4,30 +4,18 @@
 #define WHITE 0x7
 
 void setup() {
-  // put your setup code here, to run once:
-  Serial.begin(9600);
-    
-  int timer = 1000;
-  lcd.begin(16, 2);
-  lcd.setBacklight(WHITE);
-
-  //Serial.print("test");
-  //Opening Message
-  lcd.setCursor(4,0);
-  lcd.print("Welcome!");
-  delay(timer);  
-  selectionMenu();
+  
 }
 /*
 40 characters before it wraps to new line
 Currently displays 16 characters
 Have autoscroll after inital print
 */
-class LCD(){
+class LCD{
   private:
     Adafruit_RGBLCDShield lcd = Adafruit_RGBLCDShield();
   public:
-    void LCD(){
+     LCD(){
         lcd.begin(16, 2);
         lcd.setBacklight(WHITE);
       }
@@ -57,15 +45,15 @@ class LCD(){
    void displayNumber(String magnitude, String exponent){
     lcd.clear();
     lcd.setCursor(0,0);
-    printMessage("Value:");
+    this->writeStr("Value:");
     lcd.setCursor(0,1);
     writeStr(magnitude);
     writeStr(exponent);
   } 
   void line(int lineNumber){
-    lcd.setCursor(0,number);
+    lcd.setCursor(0,lineNumber);
     }
-}
+};
 
 void loop(){
   
