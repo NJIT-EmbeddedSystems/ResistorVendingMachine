@@ -6,7 +6,7 @@ char hexaKeys[ROWS][COLS];
 
 Keypad customKeypad;
 
-void init(){
+void keypad_init(){
     hexaKeys= {
         {'1', '2', '3', 'u'},
         {'4', '5', '6', 'd'},
