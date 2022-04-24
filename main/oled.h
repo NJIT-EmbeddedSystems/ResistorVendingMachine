@@ -24,13 +24,13 @@ enum OledRotation {
 	COUNTER_CLOCKWISE_270 = 1,
 };
 
-extern static Adafruit_SSD1351 oled;
+extern Adafruit_SSD1351 *oled;
 
 void oled_init();
 void oled_set_timeout( unsigned milliseconds );
 void oled_set_rotation( enum OledRotation rotation ); 
 
-void oled_display_resistor();
+void oled_display_resistor( String value );
 
 
 #endif /* _OLED_H */

@@ -2,16 +2,33 @@
 
 #include "oled.h"
 
-void uiInitializeState() {
+void state_init() {
 	uiState = {0};
-	uiState.currentMenu = NONE;
+	uiState.currentMenu = MainMenu;
 
 	uiState.menu = {.selectedItem=0, .menuItems=mainMenuItems, .menuItemsCount=mainMenuItemCount};
 
-	
-
 }
 
+void update_state( char input ) {
+	if( uiState.currentMenu == MainMenu ) {
+		switch( (KeypadButton)input ) {
+			case UP:
+				if( uiState.menu.selectedItem > 0 ) {
+					uiState.menu.selectedItem--;
+				}
+				break;
+			case DOWN:
+				if( uiState.menu.selectedItem < mainMenuItemCount ) {
+					uiState.menu.selectedItem++;
+				}
+				break;
+			default:
+				break;
+		}
+		drawMainMenu();
+	}
+}
 
 void drawMainMenu() {
 	oled.fillScreen( OLED_BLACK );

@@ -7,10 +7,10 @@
 #define SCLK_PIN	52 
 
 // OLED/SD Card Device Pins
-#define DC_PIN		4
-#define OLED_CS_PIN	5
-#define SD_CS_PIN	6
-#define RST_PIN		7
+#define DC_PIN      53
+#define OLED_CS_PIN 49
+#define SD_CS_PIN   6
+#define RST_PIN     48
 
 // I2C Pins (Used for LCD) 
 #define SDA			20

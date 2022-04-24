@@ -1,6 +1,8 @@
 #ifndef _UI_H
 #define _UI_H
 
+#include <Arduino.h>
+#include "keypad.h"
 /*
 	Keypad Layout
 	'1', '2', '3', 'u'
@@ -9,16 +11,10 @@
 	'.', '0', 'E', 'e'
 */
 
-enum KeypadButton {
-	ZERO='0', ONE, TWO, THREE, FOUR, FIVE,
-	SIX, SEVEN, EIGHT, NINE,
-	UP='u', DOWN='d',
-	BACK='b', OK='e',
-	DOT='.', MODE_E='E',
-};
 
 enum MenuState {
 	RESISTOR_SELECT,
+  RESISTOR_ORDER,
 	MAIN_MENU,
 	ADD_INVENTORY,
 	MANAGE_STOCK,
@@ -26,18 +22,26 @@ enum MenuState {
 	ERROR,
 };
 
+enum StateStatus {
+  DIRTY, // State has small incremental change
+  REFRESH, // State has completely changed, new screen
+  CURRENT, // State hasn't changed, no redraw required
+};
+
 typedef struct {
 	char *button_name;
 	void (*fn_ptr)(void*);
-} Button;
+} UIButton;
 
-static unsigned mainMenuItemCount = 4;
-char *mainMenuItems[mainMenuItemCount] = {
-	"Add Inventory",
-	"Manage Stock",
-	"View Stock",
-	"Strobe Stock LED",
-};
+typedef struct {
+  String magnitude, exponent;
+  int nextInputExponent;
+} ResistorSelection;
+
+typedef struct {
+  String magnitude, exponent;
+  int numOfResistors;
+} ResistorOrder;
 
 typedef struct {
 	unsigned selectedItem;
@@ -57,24 +61,26 @@ typedef struct {
 
 } ViewStock;
 
-struct UIState{
+typedef struct {
+  enum StateStatus stateStatus;
 	enum  MenuState currentMenu;
+  ResistorSelection resistorSelect;
 	MainMenu menu;
 	AddInventory addInventory;
 	ManageStock manageStock;
 	ViewStock viewStock;
-} uiState;
+} UIState;
+
+extern UIState uiState;
 
 void state_init();
 void update_state( char input );
 void redraw_state();
 
-void drawBase();
-void drawError();
-
 void drawMainMenu();
 void drawAddInventory();
 void drawManageStock();
 void drawViewStock();
+void drawResistorSelection();
 
 #endif /* _UI_H */
