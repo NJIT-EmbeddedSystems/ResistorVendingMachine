@@ -4,7 +4,7 @@
 #include "pindef.h"
 #include "ui.h"
 
-#define BTN_HOLD_TIME 20
+#define BTN_HOLD_TIME 100
 #define ROWS 4 
 #define COLS 4
 
@@ -25,8 +25,10 @@ enum ButtonState {
 typedef struct {
   ButtonState state;
   KeypadButton btn;
-  int currentHoldTime;
+  int holdTime;
 } Button;
+
+extern void (*btn_held_fn)(char);
 
 extern Button buttons[ROWS][COLS];
 extern int newButtonInput;
@@ -36,5 +38,7 @@ const byte colPinsDef[] = {KEYPAD_C1, KEYPAD_C2, KEYPAD_C3, KEYPAD_C4};
 
 void keypad_init();
 char getkey();
+char processKeypadInput();
+void readKeypad();
 
 #endif

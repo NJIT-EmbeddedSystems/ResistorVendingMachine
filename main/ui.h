@@ -13,13 +13,13 @@
 
 
 enum MenuState {
-	RESISTOR_SELECT,
+  RESISTOR_SELECT,
   RESISTOR_ORDER,
-	MAIN_MENU,
-	ADD_INVENTORY,
-	MANAGE_STOCK,
-	VIEW_STOCK,
-	ERROR,
+  MAIN_MENU,
+  ADD_INVENTORY,
+  MANAGE_STOCK,
+  VIEW_STOCK,
+  ERROR,
 };
 
 enum StateStatus {
@@ -29,13 +29,19 @@ enum StateStatus {
 };
 
 typedef struct {
-	char *button_name;
-	void (*fn_ptr)(void*);
+  char *button_name;
+  void (*fn_ptr)(void*);
 } UIButton;
+
+enum ResistorSelectMode {
+  NUMERIC,
+  COLOR,
+};
 
 typedef struct {
   String magnitude, exponent;
   int nextInputExponent;
+  enum ResistorSelectMode mode;
 } ResistorSelection;
 
 typedef struct {
@@ -44,9 +50,9 @@ typedef struct {
 } ResistorOrder;
 
 typedef struct {
-	unsigned selectedItem;
-	char **menuItems;
-	unsigned menuItemsCount;
+  unsigned selectedItem;
+  char **menuItems;
+  unsigned menuItemsCount;
 } MainMenu;
 
 typedef struct {
@@ -63,12 +69,12 @@ typedef struct {
 
 typedef struct {
   enum StateStatus stateStatus;
-	enum  MenuState currentMenu;
+  enum  MenuState currentMenu;
   ResistorSelection resistorSelect;
-	MainMenu menu;
-	AddInventory addInventory;
-	ManageStock manageStock;
-	ViewStock viewStock;
+  MainMenu menu;
+  AddInventory addInventory;
+  ManageStock manageStock;
+  ViewStock viewStock;
 } UIState;
 
 extern UIState uiState;
@@ -76,6 +82,10 @@ extern UIState uiState;
 void state_init();
 void update_state( char input );
 void redraw_state();
+void state_btn_held( char input );
+
+void resetMainMenuState();
+void resetResistorSelectState();
 
 void drawMainMenu();
 void drawAddInventory();
