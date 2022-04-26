@@ -70,20 +70,6 @@ char processKeypadInput() {
       buttons[e.bit.ROW][e.bit.COL].state = BTN_PRESSED;
       return (char)e.bit.KEY;
     }
-    
-    /*if( customKeypad->isPressed( e.bit.KEY ) ) {
-      if( buttons[e.bit.ROW][e.bit.COL].state == BTN_PRESSED ) {
-        if( buttons[e.bit.ROW][e.bit.COL].holdTime < BTN_HOLD_TIME ) {
-          buttons[e.bit.ROW][e.bit.COL].holdTime++;
-          //Serial.println( buttons[e.bit.ROW][e.bit.COL].holdTime++ );
-        } else {
-           buttons[e.bit.ROW][e.bit.COL].state = BTN_HELD;
-        }
-      }
-    } else if(e.bit.EVENT == KEY_JUST_RELEASED ) {
-      buttons[e.bit.ROW][e.bit.COL].state = BTN_RELEASED;
-      buttons[e.bit.ROW][e.bit.COL].holdTime = 0;
-    }*/
 
   return 0;
 

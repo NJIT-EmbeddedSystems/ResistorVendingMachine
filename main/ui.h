@@ -14,7 +14,7 @@
 
 enum MenuState {
   RESISTOR_SELECT,
-  RESISTOR_ORDER,
+  RESISTOR_CHECKOUT,
   MAIN_MENU,
   ADD_INVENTORY,
   MANAGE_STOCK,
@@ -45,6 +45,10 @@ typedef struct {
 } ResistorSelection;
 
 typedef struct {
+  String numOfResistors;
+} ResistorCheckout;
+
+typedef struct {
   String magnitude, exponent;
   int numOfResistors;
 } ResistorOrder;
@@ -71,6 +75,7 @@ typedef struct {
   enum StateStatus stateStatus;
   enum  MenuState currentMenu;
   ResistorSelection resistorSelect;
+  ResistorCheckout resistorCheckout;
   MainMenu menu;
   AddInventory addInventory;
   ManageStock manageStock;
@@ -86,11 +91,13 @@ void state_btn_held( char input );
 
 void resetMainMenuState();
 void resetResistorSelectState();
+void resetResistorCheckout();
 
 void drawMainMenu();
 void drawAddInventory();
 void drawManageStock();
 void drawViewStock();
 void drawResistorSelection();
+void drawResistorCheckout();
 
 #endif /* _UI_H */

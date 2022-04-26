@@ -20,12 +20,6 @@ void setup() {
 }
 
 void loop() {
-    /*char input = getkey();
-    if( input != 0 ) {
-      update_state( input );
-      redraw_state();
-      Serial.println(input);
-    }*/
     readKeypad();
     char input = processKeypadInput();
     if( input != 0 ) {

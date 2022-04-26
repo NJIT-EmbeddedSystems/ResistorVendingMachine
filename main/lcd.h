@@ -64,6 +64,14 @@ class LCD{
   void line(int lineNumber){
     lcd.setCursor(0,lineNumber);
     }
+
+  void displayResistorCheckout(String magnitude, String exponent, String amount) {
+    displayNumber( magnitude, exponent );
+    lcd.setCursor(9, 0);
+    writeStr("Amount:");
+    lcd.setCursor(16-amount.length(), 1);
+    writeStr( amount );
+  }
 };
 
 extern LCD *lcd;
