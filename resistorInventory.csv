@@ -1,0 +1,8 @@
+# Resistor Inventory Layout and Example 
+# Layout:
+# resistor value, band values, stock count, module #, drawer # 
+# Example:
+1e3, 102, 10, 0, 0
+220, 221, 16, 0, 1
+4.7e3, 472, 17, 0, 2
+560e3, 5603, 20, 0, 3

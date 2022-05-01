@@ -2,14 +2,14 @@
 #define _PINDEF_H
 
 // SPI Pins (Used for OLED/SD Card)
-#define MISO_PIN	50
-#define MOSI_PIN	51
-#define SCLK_PIN	52 
+#define OLED_MISO_PIN	50
+#define OLED_MOSI_PIN	51
+#define OLED_SCLK_PIN	52 
 
 // OLED/SD Card Device Pins
 #define DC_PIN      53
 #define OLED_CS_PIN 49
-#define SD_CS_PIN   6
+#define SD_CS_PIN   46
 #define RST_PIN     48
 
 // I2C Pins (Used for LCD) 
