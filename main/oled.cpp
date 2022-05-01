@@ -20,6 +20,6 @@ void oled_init() {
 	oled->enableDisplay( 1 );
 }
 
-inline void oled_set_rotation( enum OledRotation rotation ) {
+void oled_set_rotation( enum OledRotation rotation ) {
 	oled->setRotation( rotation );
 }

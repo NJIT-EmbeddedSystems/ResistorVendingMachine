@@ -73,42 +73,57 @@ void update_state( char input ) {
         break;
     }
   } else if ( uiState.currentMenu == RESISTOR_SELECT ) {
-    if ( (KeypadButton)input == BACK ) {
-      uiState.resistorSelect.nextInputExponent = 0;
-      if ( uiState.resistorSelect.exponent.charAt(0) != 0 ) {
-        uiState.resistorSelect.exponent.remove(0);
-        uiState.stateStatus = DIRTY;
-      } else {
-        if ( uiState.resistorSelect.magnitude.length() > 0 ) {
-          uiState.resistorSelect.magnitude.remove(uiState.resistorSelect.magnitude.length() - 1);
+    switch( (KeypadButton)input ) {
+      case UP:
+      case DOWN:
+        break; 	
+      case BACK:
+      {
+        uiState.resistorSelect.nextInputExponent = 0;
+        if ( uiState.resistorSelect.exponent.charAt(0) != 0 ) {
+          uiState.resistorSelect.exponent.remove(0);
           uiState.stateStatus = DIRTY;
-        }
-      }
-    } else {
-      if ( uiState.resistorSelect.nextInputExponent ) {
-        if ( isDigit(input) ) {
-          uiState.resistorSelect.exponent = input;
-          uiState.resistorSelect.nextInputExponent = 0;
-          uiState.stateStatus = DIRTY;
-        }
-      } else {
-        if ( (KeypadButton)input == MODE_E ) {
-          if ( uiState.resistorSelect.magnitude.length() == 0 ) {
-            uiState.resistorSelect.mode = uiState.resistorSelect.mode ? NUMERIC : COLOR;
-            //Serial.println( uiState.resistorSelect.mode ? "COLOR" : "NUMERIC" );
+        } else {
+          if ( uiState.resistorSelect.magnitude.length() > 0 ) {
+            uiState.resistorSelect.magnitude.remove(uiState.resistorSelect.magnitude.length() - 1);
             uiState.stateStatus = DIRTY;
-          } else {
-            uiState.resistorSelect.nextInputExponent = 1;
           }
-        } else if( (KeypadButton)input == OK ) {
-          uiState.currentMenu = RESISTOR_CHECKOUT;
-          uiState.stateStatus = REFRESH;
-        } else if ( isDigit(input) && uiState.resistorSelect.magnitude.length() < 3 ) {
-          uiState.resistorSelect.magnitude += input;
-          uiState.stateStatus = DIRTY;
         }
-      }
-    }
+      } break;
+      case OK:
+      {
+        uiState.currentMenu = RESISTOR_CHECKOUT;
+        uiState.stateStatus = REFRESH;
+      } break;
+      case MODE_E:
+      {
+        if ( uiState.resistorSelect.magnitude.length() == 0 ) {
+          uiState.resistorSelect.mode = uiState.resistorSelect.mode ? NUMERIC : COLOR;
+          uiState.stateStatus = DIRTY;
+        } else {
+          uiState.resistorSelect.nextInputExponent = 1;
+        }
+      } break;
+      case DOT:
+      {
+        if( uiState.resistorSelect.mode == COLOR ) break;
+      } break;
+      default:
+      {
+        if ( uiState.resistorSelect.nextInputExponent ) {
+          if ( isDigit(input) ) {
+            uiState.resistorSelect.exponent = input;
+            uiState.resistorSelect.nextInputExponent = 0;
+            uiState.stateStatus = DIRTY;
+          }
+        } else {
+          if ( isDigit(input) && uiState.resistorSelect.magnitude.length() < 3 ) {
+            uiState.resistorSelect.magnitude += input;
+            uiState.stateStatus = DIRTY;
+          }
+        }
+      } break;
+	  }
   } else if( uiState.currentMenu == RESISTOR_CHECKOUT ) {
     if( isDigit(input) ) {
       if( uiState.resistorCheckout.numOfResistors.length() >= 2 ) {
