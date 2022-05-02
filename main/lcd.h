@@ -47,6 +47,11 @@ class LCD{
       lcd.print(message);
       }
     }
+
+    void clearDisplay() {
+      lcd.clear();
+      lcd.setCursor(0,0);
+    }
     
    void displayNumber(String magnitude, String exponent){
     lcd.clear();
