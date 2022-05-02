@@ -1,6 +1,7 @@
 #include "ui.h"
 #include "lcd.h"
 #include "oled.h"
+#include "SDCard.h"
 
 #define mainMenuItemCount 4
 const char *mainMenuItems[mainMenuItemCount] = {
@@ -36,15 +37,13 @@ void resetResistorSelectState() {
 void drawState();
 
 void state_btn_held( char input ) {
-  Serial.print("State Btn held: ");
-  Serial.println( input );
-  if ( uiState.currentMenu == RESISTOR_SELECT ) {
+  //if ( uiState.currentMenu == RESISTOR_SELECT ) {
     if ( (KeypadButton)input == MODE_E ) {      
       uiState.currentMenu = MAIN_MENU;
       uiState.stateStatus = REFRESH;
       resetResistorSelectState();
     }
-  }
+  //}
   redraw_state();
 }
 
@@ -85,6 +84,9 @@ void update_state( char input ) {
           uiState.stateStatus = DIRTY;
         } else {
           if ( uiState.resistorSelect.magnitude.length() > 0 ) {
+            if( uiState.resistorSelect.magnitude.charAt(uiState.resistorSelect.magnitude.length() - 1) == '.' ) {
+              uiState.resistorSelect.decimal = 0;
+            }
             uiState.resistorSelect.magnitude.remove(uiState.resistorSelect.magnitude.length() - 1);
             uiState.stateStatus = DIRTY;
           }
@@ -93,6 +95,7 @@ void update_state( char input ) {
       case OK:
       {
         uiState.currentMenu = RESISTOR_CHECKOUT;
+        checkInventoryForResistor();
         uiState.stateStatus = REFRESH;
       } break;
       case MODE_E:
@@ -101,45 +104,72 @@ void update_state( char input ) {
           uiState.resistorSelect.mode = uiState.resistorSelect.mode ? NUMERIC : COLOR;
           uiState.stateStatus = DIRTY;
         } else {
+          if( uiState.resistorSelect.mode == COLOR ) break;
           uiState.resistorSelect.nextInputExponent = 1;
         }
       } break;
       case DOT:
       {
         if( uiState.resistorSelect.mode == COLOR ) break;
+        if( !uiState.resistorSelect.nextInputExponent && !uiState.resistorSelect.decimal ) {		      
+            uiState.resistorSelect.magnitude += '.';
+            uiState.resistorSelect.decimal = 1;
+            uiState.stateStatus = DIRTY;
+        }
       } break;
       default:
       {
         if ( uiState.resistorSelect.nextInputExponent ) {
-          if ( isDigit(input) ) {
-            uiState.resistorSelect.exponent = input;
-            uiState.resistorSelect.nextInputExponent = 0;
-            uiState.stateStatus = DIRTY;
-          }
+          uiState.resistorSelect.exponent = input;
+          uiState.resistorSelect.nextInputExponent = 0;
+          uiState.stateStatus = DIRTY;
         } else {
-          if ( isDigit(input) && uiState.resistorSelect.magnitude.length() < 3 ) {
+          if ( uiState.resistorSelect.magnitude.length() < (3 + uiState.resistorSelect.decimal) ) {
             uiState.resistorSelect.magnitude += input;
+            uiState.stateStatus = DIRTY;
+          } else if( uiState.resistorSelect.mode == COLOR ) {
+            uiState.resistorSelect.exponent = input;
             uiState.stateStatus = DIRTY;
           }
         }
       } break;
-	  }
+    }
   } else if( uiState.currentMenu == RESISTOR_CHECKOUT ) {
-    if( isDigit(input) ) {
-      if( uiState.resistorCheckout.numOfResistors.length() >= 2 ) {
-        return;
-      }
-      if( uiState.resistorCheckout.numOfResistors.charAt(0) == '0' ) {
-        uiState.resistorCheckout.numOfResistors.remove(0);
-      }
-      uiState.resistorCheckout.numOfResistors += input;
-      uiState.stateStatus = DIRTY;
-    } else if( (KeypadButton)input == BACK ) {
-      uiState.resistorCheckout.numOfResistors.remove(uiState.resistorCheckout.numOfResistors.length()-1);
-      if( uiState.resistorCheckout.numOfResistors.length() == 0 ) {
-        uiState.resistorCheckout.numOfResistors += "0";
-      }
-      uiState.stateStatus = DIRTY;
+    switch( (KeypadButton)input ) {
+      case UP:
+      case DOWN:
+      case DOT:
+      case MODE_E:
+        break;
+      case OK:
+      {
+		uiState.currentMenu = RESISTOR_INDICATOR;
+		uiState.stateStatus = REFRESH;
+      } break;
+      case BACK:
+      {
+        if( uiState.resistorCheckout.numOfResistors.charAt(0) == '0' ) {
+          uiState.currentMenu = RESISTOR_SELECT;
+          uiState.stateStatus = REFRESH;
+          break;
+        }
+        uiState.resistorCheckout.numOfResistors.remove(uiState.resistorCheckout.numOfResistors.length()-1);
+        uiState.stateStatus = DIRTY;
+        if( uiState.resistorCheckout.numOfResistors.length() == 0 ) {
+          uiState.resistorCheckout.numOfResistors += "0";
+        }
+      } break;
+      default:
+      {
+        if( uiState.resistorCheckout.numOfResistors.length() >= 2 ) {
+          return;
+        }
+        if( uiState.resistorCheckout.numOfResistors.charAt(0) == '0' ) {
+          uiState.resistorCheckout.numOfResistors.remove(0);
+        }
+        uiState.resistorCheckout.numOfResistors += input;
+        uiState.stateStatus = DIRTY;
+      } break;
     }
   }
 }
@@ -157,6 +187,9 @@ void redraw_state() {
     case RESISTOR_CHECKOUT:
       drawResistorCheckout();
       break;
+    case RESISTOR_INDICATOR:
+      drawResistorIndicator();
+      break;
     default:
       break;
   }
@@ -168,6 +201,7 @@ void drawMainMenu() {
   oled->setCursor( 0, 0 );
   oled->setTextColor( OLED_CYAN );
   oled->print( "Main Menu\n\n" );
+  lcd->clearDisplay();
 
   for ( unsigned i = 0; i < uiState.menu.menuItemsCount; ++i ) {
     if ( i == uiState.menu.selectedItem ) {
@@ -204,31 +238,32 @@ unsigned resistorColors[] = {BLACK, BROWN, RED, ORANGE, YELLOW, GREEN, BLUE, VIO
 void drawResistor( String magnitude, String exponent );
 void drawResistorSelection() {
   drawResistor( uiState.resistorSelect.magnitude, uiState.resistorSelect.exponent );
-  lcd->displayNumber( uiState.resistorSelect.magnitude, uiState.resistorSelect.exponent );
-}
-
-void drawResistor( String magnitude, String exponent ) {
-  oled->fillScreen(OLED_BLACK);
-
   oled->setCursor( 4, 0 );
   oled->setTextColor( OLED_YELLOW );
   oled->print( "RESISTOR SELECT MODE " );
   oled->setTextColor( OLED_RED );
   oled->setCursor( 64 - (uiState.resistorSelect.mode ? 3 : 4) * 5, 12 );
   oled->print( uiState.resistorSelect.mode ? "COLOR" : "NUMERIC" );
+  lcd->displayNumber( uiState.resistorSelect.magnitude, uiState.resistorSelect.exponent );
+}
+
+void drawResistor( String magnitude, String exponent ) {
+  oled->fillScreen(OLED_BLACK);
 
   static int resistor_color = 0xEE6D;
   oled->fillCircle( 25, 39 + 22, 26, resistor_color );
   oled->fillCircle( 127 - 25, 39 + 22, 26, resistor_color );
   oled->fillRect( 20, 39 - 1, 88, 47, resistor_color );
 
-  int i;
+  int i, offset = 0;
 
-  for ( i = 0; i < magnitude.length() && i < 3; ++i ) {
-    if ( isDigit(magnitude.charAt(i)) ) {
-      oled->fillRect( RESISTOR_START_X + (i * 20), RESISTOR_START_Y, RESISTOR_WIDTH, RESISTOR_HEIGHT, resistorColors[magnitude.charAt(i) - 48] );
+  for ( i = 0; i < magnitude.length(); ++i ) {
+    if( magnitude.charAt(i) == '.' ) continue;
+    if( isDigit(magnitude.charAt(i)) ) {
+      oled->fillRect( RESISTOR_START_X + (offset * 20), RESISTOR_START_Y, RESISTOR_WIDTH, RESISTOR_HEIGHT, resistorColors[magnitude.charAt(offset) - 48] );
+      oled->drawRect( RESISTOR_START_X + (offset * 20), RESISTOR_START_Y, RESISTOR_WIDTH, RESISTOR_HEIGHT, BLACK );
+      offset++;
     }
-    oled->drawRect( RESISTOR_START_X + (i * 20), RESISTOR_START_Y, RESISTOR_WIDTH, RESISTOR_HEIGHT, BLACK );
   }
 
   if ( isDigit(exponent.charAt(0)) ) {
@@ -243,31 +278,20 @@ void resetResistorCheckout() {
 }
 
 void drawResistorCheckout() {
-  oled->fillScreen(OLED_BLACK);
+  drawResistor( uiState.resistorSelect.magnitude, uiState.resistorSelect.exponent );
   oled->setCursor( 0, 0 );
   oled->setTextColor( OLED_RED );
   oled->print( "Enter Amount: " );
 
-  static int resistor_color = 0xEE6D;
-  oled->fillCircle( 25, 39 + 22, 26, resistor_color );
-  oled->fillCircle( 127 - 25, 39 + 22, 26, resistor_color );
-  oled->fillRect( 20, 39 - 1, 88, 47, resistor_color );
-
-  int i;
-  String magnitude = uiState.resistorSelect.magnitude;
-  String exponent = uiState.resistorSelect.exponent;
-  for ( i = 0; i < magnitude.length() && i < 3; ++i ) {
-    if ( isDigit(magnitude.charAt(i)) ) {
-      oled->fillRect( RESISTOR_START_X + (i * 20), RESISTOR_START_Y, RESISTOR_WIDTH, RESISTOR_HEIGHT, resistorColors[magnitude.charAt(i) - 48] );
-    }
-    oled->drawRect( RESISTOR_START_X + (i * 20), RESISTOR_START_Y, RESISTOR_WIDTH, RESISTOR_HEIGHT, BLACK );
-  }
-
-  if ( isDigit(exponent.charAt(0)) ) {
-    oled->fillRect( RESISTOR_START_X + (3 * 20), RESISTOR_START_Y, RESISTOR_WIDTH, RESISTOR_HEIGHT, resistorColors[exponent.charAt(0) - 48] );
-    oled->drawRect( RESISTOR_START_X + (3 * 20), RESISTOR_START_Y, RESISTOR_WIDTH, RESISTOR_HEIGHT, BLACK );
-  }
-
   lcd->displayResistorCheckout( uiState.resistorSelect.magnitude, uiState.resistorSelect.exponent, uiState.resistorCheckout.numOfResistors );
 
+}
+
+void drawResistorIndicator() {
+  drawResistor( uiState.resistorSelect.magnitude, uiState.resistorSelect.exponent );
+  
+}
+
+void checkInventoryForResistor() {
+  InventoryInfo closestValue = sd_find_closest_resistor( uiState.resistorSelect.magnitude, uiState.resistorSelect.exponent );
 }
