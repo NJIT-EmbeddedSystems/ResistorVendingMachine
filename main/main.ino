@@ -6,17 +6,29 @@
 #include "ui.h"
 #include "lcd.h"
 #include "SDCard.h"
+#include "SetColor.h"
+
+unsigned long lastInput;
+unsigned long currentTime;
+unsigned long oledTimeout;
+unsigned long ledIndicatorTimeout;
 
 void setup() {
     Serial.begin(9600);
 
     lcd_init();
+    colorInit();
+    ledOff();
     keypad_init();
     btn_held_fn = state_btn_held;
     oled_init();
     oled_set_rotation(CLOCKWISE_180);
     state_init();
     sdCard_init();
+
+    lastInput = millis();
+    oledTimeout = 20000;
+    ledIndicatorTimeout = 20000;
     
     Serial.println( "Starting Resistor Vending Machine" );
 
@@ -48,11 +60,24 @@ void setup() {
 }
 
 void loop() {
+    currentTime = millis();
+    if( currentTime - lastInput >= oledTimeout ) {
+      oled_set_display( 0 );
+    }
+    if( currentTime - lastInput >= ledIndicatorTimeout ) {
+      ledOff();
+    }
+  
     readKeypad();
     char input = processKeypadInput();
     if( input != 0 ) {
-      update_state( input);
-      redraw_state();
+      lastInput = millis();
+      if( !oled_is_display_on() ) {
+        oled_set_display( 1 );
+      } else {
+        update_state( input);
+        redraw_state();
+      }
     }
   
     delay(10);

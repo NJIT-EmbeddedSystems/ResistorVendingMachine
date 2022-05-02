@@ -51,6 +51,11 @@ typedef struct {
 } ResistorCheckout;
 
 typedef struct {
+  int moduleNum;
+  int drawerNum;
+} ResistorIndicator;
+
+typedef struct {
   unsigned selectedItem;
   char **menuItems;
   unsigned menuItemsCount;
@@ -73,6 +78,7 @@ typedef struct {
   enum  MenuState currentMenu;
   ResistorSelection resistorSelect;
   ResistorCheckout resistorCheckout;
+  ResistorIndicator resistorIndicator;
   MainMenu menu;
   AddInventory addInventory;
   ManageStock manageStock;

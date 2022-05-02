@@ -8,6 +8,7 @@
 
 Adafruit_SSD1351 *oled;
 static int oled_initialized = 0;
+bool oledDisplayOn;
 
 void oled_init() {
 	if( oled_initialized ) return;
@@ -18,6 +19,16 @@ void oled_init() {
 	oled->setFont();
 	oled->setTextSize( 1 );
 	oled->enableDisplay( 1 );
+  oledDisplayOn = true;
+}
+
+void oled_set_display( bool on ) {
+  oled->enableDisplay( on );
+  oledDisplayOn = on;
+}
+
+bool oled_is_display_on() {
+  return oledDisplayOn;
 }
 
 void oled_set_rotation( enum OledRotation rotation ) {

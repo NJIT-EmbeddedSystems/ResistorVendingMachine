@@ -25,9 +25,11 @@ enum OledRotation {
 };
 
 extern Adafruit_SSD1351 *oled;
+extern bool oledDisplayOff;
 
 void oled_init();
-void oled_set_timeout( unsigned milliseconds );
+void oled_set_display( bool on );
+bool oled_is_display_on( void );
 void oled_set_rotation( enum OledRotation rotation ); 
 
 void oled_display_resistor( String value );

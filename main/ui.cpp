@@ -2,6 +2,7 @@
 #include "lcd.h"
 #include "oled.h"
 #include "SDCard.h"
+#include "SetColor.h"
 
 #define mainMenuItemCount 4
 const char *mainMenuItems[mainMenuItemCount] = {
@@ -22,12 +23,14 @@ void state_init() {
 }
 
 void resetMainMenuState() {
+  ledOff();
   uiState.menu.selectedItem = 0;
   uiState.menu.menuItems = mainMenuItems;
   uiState.menu.menuItemsCount = mainMenuItemCount;
 }
 
 void resetResistorSelectState() {
+  ledOff();
   uiState.resistorSelect.nextInputExponent = 0;
   uiState.resistorSelect.mode = NUMERIC;
   uiState.resistorSelect.magnitude.remove(0, uiState.resistorSelect.magnitude.length());
@@ -290,7 +293,7 @@ void drawResistorCheckout() {
 
 void drawResistorIndicator() {
   drawResistor( uiState.resistorSelect.magnitude, uiState.resistorSelect.exponent );
-  
+  ledOn( uiState.resistorIndicator.moduleNum, uiState.resistorIndicator.drawerNum );
 }
 
 void checkInventoryForResistor() {
@@ -303,4 +306,7 @@ void checkInventoryForResistor() {
   InventoryInfo closestValue = sd_find_closest_resistor( uiState.resistorSelect.magnitude, uiState.resistorSelect.exponent );
   uiState.resistorSelect.magnitude = closestValue.magnitude;
   uiState.resistorSelect.exponent = closestValue.exponent;
+
+  uiState.resistorIndicator.moduleNum = closestValue.moduleNum;
+  uiState.resistorIndicator.drawerNum = closestValue.drawerNum; 
 }
