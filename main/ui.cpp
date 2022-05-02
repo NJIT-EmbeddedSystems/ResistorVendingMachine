@@ -120,6 +120,7 @@ void update_state( char input ) {
       default:
       {
         if ( uiState.resistorSelect.nextInputExponent ) {
+          if( input-48 >= 7 ) break;
           uiState.resistorSelect.exponent = input;
           uiState.resistorSelect.nextInputExponent = 0;
           uiState.stateStatus = DIRTY;
@@ -293,5 +294,13 @@ void drawResistorIndicator() {
 }
 
 void checkInventoryForResistor() {
+  if( uiState.resistorSelect.mode == COLOR ) {
+    int magnitudeLen = uiState.resistorSelect.magnitude.length();
+    uiState.resistorSelect.exponent = uiState.resistorSelect.magnitude.charAt(magnitudeLen-1);
+    uiState.resistorSelect.magnitude.remove(magnitudeLen-1, 1);
+  }
+  
   InventoryInfo closestValue = sd_find_closest_resistor( uiState.resistorSelect.magnitude, uiState.resistorSelect.exponent );
+  uiState.resistorSelect.magnitude = closestValue.magnitude;
+  uiState.resistorSelect.exponent = closestValue.exponent;
 }

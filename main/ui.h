@@ -51,11 +51,6 @@ typedef struct {
 } ResistorCheckout;
 
 typedef struct {
-  String magnitude, exponent;
-  int numOfResistors;
-} ResistorOrder;
-
-typedef struct {
   unsigned selectedItem;
   char **menuItems;
   unsigned menuItemsCount;

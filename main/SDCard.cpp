@@ -64,6 +64,9 @@ unsigned long sd_read_resistor_value( void ) {
       break;
     }
   }
+  if( buffer.length() == 0 ) {
+    return 0;
+  }
 
   if( tolower(c) == 'e' ) {
 	c = resistorInventoryFile.read();
@@ -78,6 +81,9 @@ unsigned long sd_read_resistor_value( void ) {
 }
 
 void sd_read_resistor_color_code( String *magnitude, String *exponent ) {
+  magnitude->remove(0, magnitude->length());
+  exponent->remove(0, exponent->length());
+  
   moveToCommaElement( 1 );
  
   char c;
@@ -143,4 +149,52 @@ bool sd_previous_line( void ) {
 void sd_goto_start( void ) {
   resistorInventoryFile.seek( 0 );
   startOfLine = 0;
+}
+
+InventoryInfo sd_find_closest_resistor( String magnitude, String exponent ) {
+  InventoryInfo closest;
+  
+  int decimalOffset = 0; 
+  String resistorString;
+  unsigned long resistorValue = 0;
+  
+  for( int i = 0; i < magnitude.length(); ++i ) {
+    if( magnitude.charAt(i) == '.' ) {
+      if( exponent.toInt() == 0 ) break;
+      decimalOffset = magnitude.length() - (i+1);
+    } else {
+      resistorString += magnitude.charAt(i);
+    }
+  }
+
+  for( int i = 0; i < exponent.toInt()-decimalOffset; ++i ) {
+    resistorString += '0';
+  }
+
+  resistorValue = resistorString.toInt();
+
+  sd_goto_start();
+  unsigned long currentResistor = 0, closestResistor = 0;
+  closestResistor = sd_read_resistor_value();
+  closest.numericValue = closestResistor;
+  sd_read_resistor_color_code( &closest.magnitude, &closest.exponent );
+  closest.count = sd_read_inventory_count();
+  closest.moduleNum = sd_read_module_num();
+  closest.drawerNum = sd_read_drawer_num();
+  
+  sd_next_line();
+  while( (currentResistor = sd_read_resistor_value()) != 0 ) {
+    if( abs(long(resistorValue - currentResistor)) < abs(long(resistorValue - closestResistor)) ) {
+      closestResistor = currentResistor;
+      closest.numericValue = closestResistor;
+      sd_read_resistor_color_code( &closest.magnitude, &closest.exponent );
+      closest.count = sd_read_inventory_count();
+      closest.moduleNum = sd_read_module_num();
+      closest.drawerNum = sd_read_drawer_num();
+    }
+    sd_next_line();
+  }
+  sd_goto_start();
+
+  return closest;
 }
