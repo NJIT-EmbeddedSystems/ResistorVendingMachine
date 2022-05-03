@@ -22,7 +22,7 @@ void setup() {
     keypad_init();
     btn_held_fn = state_btn_held;
     oled_init();
-    oled_set_rotation(CLOCKWISE_180);
+    //oled_set_rotation(CLOCKWISE_180);
     state_init();
     sdCard_init();
 

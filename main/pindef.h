@@ -8,6 +8,7 @@
 
 // OLED/SD Card Device Pins
 #define DC_PIN      53
+#define CD_PIN      45
 #define OLED_CS_PIN 49
 #define SD_CS_PIN   46
 #define RST_PIN     48
