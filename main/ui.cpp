@@ -4,6 +4,8 @@
 #include "SDCard.h"
 #include "SetColor.h"
 
+void resistorExponentRefactor( String *magnitude, String *exponent );
+
 #define mainMenuItemCount 4
 const char *mainMenuItems[mainMenuItemCount] = {
   (char*)"Add Inventory",
@@ -15,11 +17,16 @@ const char *mainMenuItems[mainMenuItemCount] = {
 UIState uiState = {0};
 
 void state_init() {
-  uiState.currentMenu = MAIN_MENU;
+  resetAllStates();
+}
 
+void resetAllStates() {
+  uiState.currentMenu = RESISTOR_SELECT;
+  uiState.stateStatus = REFRESH;
   resetMainMenuState();
   resetResistorSelectState();
   resetResistorCheckout();
+  resetResistorIndicator();
 }
 
 void resetMainMenuState() {
@@ -40,6 +47,7 @@ void resetResistorSelectState() {
 void drawState();
 
 void state_btn_held( char input ) {
+  Serial.println("BTN HELD");
   //if ( uiState.currentMenu == RESISTOR_SELECT ) {
     if ( (KeypadButton)input == MODE_E ) {      
       uiState.currentMenu = MAIN_MENU;
@@ -138,6 +146,28 @@ void update_state( char input ) {
         }
       } break;
     }
+  } else if( uiState.currentMenu == RESISTOR_INVENTORY_NOT_FOUND ) {
+    switch( (KeypadButton)input ) {
+      case OK:
+      {
+        uiState.currentMenu = RESISTOR_CHECKOUT;
+        uiState.stateStatus = REFRESH;
+        
+        uiState.resistorSelect.magnitude = uiState.resistorSelect.closest.magnitude;
+        uiState.resistorSelect.exponent = uiState.resistorSelect.closest.exponent;
+        uiState.resistorIndicator.moduleNum = uiState.resistorSelect.closest.moduleNum;
+        uiState.resistorIndicator.drawerNum = uiState.resistorSelect.closest.drawerNum; 
+      } break;
+      case BACK:
+      {
+        uiState.currentMenu = RESISTOR_SELECT;
+        uiState.stateStatus = REFRESH;
+      } break;
+      default:
+      {
+        
+      } break;
+    }
   } else if( uiState.currentMenu == RESISTOR_CHECKOUT ) {
     switch( (KeypadButton)input ) {
       case UP:
@@ -147,8 +177,8 @@ void update_state( char input ) {
         break;
       case OK:
       {
-		uiState.currentMenu = RESISTOR_INDICATOR;
-		uiState.stateStatus = REFRESH;
+	      uiState.currentMenu = RESISTOR_INDICATOR;
+		    uiState.stateStatus = REFRESH;
       } break;
       case BACK:
       {
@@ -175,6 +205,9 @@ void update_state( char input ) {
         uiState.stateStatus = DIRTY;
       } break;
     }
+  } else if( uiState.currentMenu == RESISTOR_INDICATOR ) {
+    resetAllStates();
+    uiState.stateStatus = REFRESH;
   }
 }
 
@@ -193,6 +226,9 @@ void redraw_state() {
       break;
     case RESISTOR_INDICATOR:
       drawResistorIndicator();
+      break;
+    case RESISTOR_INVENTORY_NOT_FOUND:
+      drawResistorNotFound();
       break;
     default:
       break;
@@ -281,13 +317,22 @@ void resetResistorCheckout() {
   uiState.resistorCheckout.numOfResistors = String(0);
 }
 
+void resetResistorIndicator() {
+  uiState.resistorIndicator.moduleNum = -1;
+  uiState.resistorIndicator.drawerNum = -1;
+}
+
 void drawResistorCheckout() {
+  uiState.resistorSelect.decimal = 0;
   drawResistor( uiState.resistorSelect.magnitude, uiState.resistorSelect.exponent );
   oled->setCursor( 0, 0 );
   oled->setTextColor( OLED_RED );
   oled->print( "Enter Amount: " );
 
-  lcd->displayResistorCheckout( uiState.resistorSelect.magnitude, uiState.resistorSelect.exponent, uiState.resistorCheckout.numOfResistors );
+  String magnitude = uiState.resistorSelect.magnitude;
+  String exponent = uiState.resistorSelect.exponent;
+  resistorExponentRefactor( &magnitude, &exponent );
+  lcd->displayResistorCheckout( magnitude, exponent, uiState.resistorCheckout.numOfResistors );
 
 }
 
@@ -296,17 +341,98 @@ void drawResistorIndicator() {
   ledOn( uiState.resistorIndicator.moduleNum, uiState.resistorIndicator.drawerNum );
 }
 
+unsigned long resistorStringToInt( String magnitude, String exponent ) {
+  String resistorString;
+  unsigned decimalOffset = 0;
+  
+  for( int i = 0; i < magnitude.length(); ++i ) {
+    if( magnitude.charAt(i) == '.' ) {
+      if( exponent.toInt() == 0 ) break;
+      decimalOffset = magnitude.length() - (i+1);
+    } else {
+      resistorString += magnitude.charAt(i);
+    }
+  }
+
+  for( int i = 0; i < exponent.toInt()-decimalOffset; ++i ) {
+    resistorString += '0';
+  }
+
+  return (unsigned long)resistorString.toInt();
+}
+
+void resistorExponentRefactor( String *magnitude, String *exponent ) {
+  String newMag, newExp;
+  int exponentValue = exponent->toInt();
+  for( int i = 0; i < magnitude->length(); ++i ) {
+    if( isdigit(magnitude->charAt(i) ) ) {
+      newMag += magnitude->charAt(i);
+    }
+  }
+  
+  if( exponentValue < 3 ) {
+    for( int i = 0; i < exponentValue; ++i ) {
+      newMag += '0';
+    }
+    newExp = '0';
+  } else if( exponentValue < 6 ) {
+    for( int i = 0; i < exponentValue-3; ++i ) {
+      newMag += '0';
+    }
+    newExp = '3';
+  } else {
+    for( int i = 0; i < exponentValue-6; ++i ) {
+      newMag += '0';
+    }
+    
+    newExp = '6';
+  }
+  (*magnitude) = newMag;
+  (*exponent) = newExp;
+}
+
 void checkInventoryForResistor() {
   if( uiState.resistorSelect.mode == COLOR ) {
     int magnitudeLen = uiState.resistorSelect.magnitude.length();
     uiState.resistorSelect.exponent = uiState.resistorSelect.magnitude.charAt(magnitudeLen-1);
     uiState.resistorSelect.magnitude.remove(magnitudeLen-1, 1);
   }
+
+  unsigned long inputResistance = resistorStringToInt( uiState.resistorSelect.magnitude, uiState.resistorSelect.exponent );
   
   InventoryInfo closestValue = sd_find_closest_resistor( uiState.resistorSelect.magnitude, uiState.resistorSelect.exponent );
-  uiState.resistorSelect.magnitude = closestValue.magnitude;
-  uiState.resistorSelect.exponent = closestValue.exponent;
 
-  uiState.resistorIndicator.moduleNum = closestValue.moduleNum;
-  uiState.resistorIndicator.drawerNum = closestValue.drawerNum; 
+  unsigned long closestResistance = resistorStringToInt( closestValue.magnitude, closestValue.exponent );
+  
+  if( inputResistance != closestResistance ) {
+    uiState.resistorSelect.closest = closestValue;
+    uiState.currentMenu = RESISTOR_INVENTORY_NOT_FOUND;
+  } else {
+    uiState.resistorSelect.magnitude = closestValue.magnitude;
+    uiState.resistorSelect.exponent = closestValue.exponent;
+    uiState.resistorIndicator.moduleNum = closestValue.moduleNum;
+    uiState.resistorIndicator.drawerNum = closestValue.drawerNum; 
+  }
+}
+
+void drawResistorNotFound() {
+  lcd->clearDisplay();
+  String msg;
+  /*msg += uiState.resistorSelect.magnitude;
+  msg += "e";
+  msg += uiState.resistorSelect.exponent;*/
+  String magnitude = uiState.resistorSelect.closest.magnitude;
+  String exponent = uiState.resistorSelect.closest.exponent;
+  resistorExponentRefactor( &magnitude, &exponent );
+  
+  lcd->displayNotInStock( magnitude, exponent );
+
+  oled->fillScreen(OLED_BLACK);
+  oled->setCursor( 0, 0 );
+  oled->setTextColor( OLED_RED );
+  oled->print( "Selected resistor is NOT in stock\n\n" );
+  oled->setTextColor( OLED_WHITE );
+  oled->print( "Would you like to\npurchase closest\navailable?\n\n" );
+  oled->setTextColor( OLED_YELLOW );
+  oled->print( "Yes(Ok) / No(Back)" );
 }

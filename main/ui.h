@@ -3,6 +3,7 @@
 
 #include <Arduino.h>
 #include "keypad.h"
+#include "SDCard.h"
 /*
 	Keypad Layout
 	'1', '2', '3', 'u'
@@ -15,6 +16,7 @@
 enum MenuState {
   RESISTOR_SELECT,
   RESISTOR_CHECKOUT,
+  RESISTOR_INVENTORY_NOT_FOUND,
   RESISTOR_INDICATOR,
   MAIN_MENU,
   ADD_INVENTORY,
@@ -44,6 +46,7 @@ typedef struct {
   int nextInputExponent;
   enum ResistorSelectMode mode;
   int decimal;
+  InventoryInfo closest;
 } ResistorSelection;
 
 typedef struct {
@@ -92,9 +95,11 @@ void update_state( char input );
 void redraw_state();
 void state_btn_held( char input );
 
+void resetAllStates();
 void resetMainMenuState();
 void resetResistorSelectState();
 void resetResistorCheckout();
+void resetResistorIndicator();
 
 void checkInventoryForResistor();
 
@@ -105,5 +110,6 @@ void drawViewStock();
 void drawResistorSelection();
 void drawResistorCheckout();
 void drawResistorIndicator();
+void drawResistorNotFound();
 
 #endif /* _UI_H */

@@ -28,7 +28,7 @@ void setup() {
 
     lastInput = millis();
     oledTimeout = 20000;
-    ledIndicatorTimeout = 20000;
+    ledIndicatorTimeout = 10000;
     
     Serial.println( "Starting Resistor Vending Machine" );
 
@@ -56,16 +56,19 @@ void setup() {
     } while( sd_next_line() );
     Serial.println( "END OF READING SDCARD" );
     sd_goto_start();
-    drawMainMenu();
+    redraw_state();
 }
 
 void loop() {
     currentTime = millis();
     if( currentTime - lastInput >= oledTimeout ) {
       oled_set_display( 0 );
+      lcd->setDisplay(0);
     }
-    if( currentTime - lastInput >= ledIndicatorTimeout ) {
+    if( isLedOn && (currentTime - lastInput >= ledIndicatorTimeout) ) {
       ledOff();
+      resetAllStates();
+      redraw_state();
     }
   
     readKeypad();
@@ -74,6 +77,7 @@ void loop() {
       lastInput = millis();
       if( !oled_is_display_on() ) {
         oled_set_display( 1 );
+        lcd->setDisplay(1);
       } else {
         update_state( input);
         redraw_state();
