@@ -5,7 +5,8 @@
 #include <Wire.h>
 #include <Adafruit_RGBLCDShield.h>  
 #include <utility/Adafruit_MCP23017.h>
-#define WHITE 0x7
+#define LCD_BACKLIGHT_WHITE 0x7
+#define LCD_BACKLIGHT_OFF 0x0
 
 /*
 40 characters before it wraps to new line
@@ -18,13 +19,24 @@ class LCD{
   public:
      LCD(){
         lcd.begin(16, 2);
-        lcd.setBacklight(WHITE);
+        lcd.setBacklight(LCD_BACKLIGHT_WHITE);
 
         // Create Ohm Character
         /*uint8_t ohm[] = {0x0,0xe,0x11,0x11,0x11,0xa,0x1b};
         lcd.createChar( 0, ohm );
         lcd.clear();*/
       }
+
+    void setDisplay( bool on ) {
+      if( on ) {
+        lcd.setBacklight(LCD_BACKLIGHT_WHITE);
+        lcd.display();
+      } else {
+        lcd.setBacklight(LCD_BACKLIGHT_OFF);
+        lcd.noDisplay();
+      }
+    }
+      
     void writeStr(String message){
       if (message.length() > 16){    
   
@@ -71,11 +83,51 @@ class LCD{
     }
 
   void displayResistorCheckout(String magnitude, String exponent, String amount) {
-    displayNumber( magnitude, exponent );
+    lcd.clear();
+    lcd.setCursor(0,0);
+    this->writeStr("Value:");
+    lcd.setCursor(0,1);
+    writeStr(magnitude);
+    int exponentValue = exponent.toInt();
+    if(exponentValue == 0 ) {
+      
+    } else if(exponentValue == 3) {
+      writeStr("k");
+    } else if (exponentValue == 6) {
+      writeStr("M");
+    } else {
+      writeStr("e");
+      writeStr((String)exponent.charAt(0));
+    }
+    char ohm = 244;
+    writeStr((String)ohm);
+    
+    //displayNumber( magnitude, exponent );
     lcd.setCursor(9, 0);
     writeStr("Amount:");
     lcd.setCursor(16-amount.length(), 1);
     writeStr( amount );
+  }
+
+  void displayNotInStock(String magnitude, String exponent) {
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    writeStr("Closest in Stock");
+    lcd.setCursor(0, 1);
+    writeStr(magnitude);
+    int exponentValue = exponent.toInt();
+    if(exponentValue == 0 ) {
+      
+    } else if(exponentValue == 3) {
+      writeStr("k");
+    } else if (exponentValue == 6) {
+      writeStr("M");
+    } else {
+      writeStr("e");
+      writeStr((String)exponent.charAt(0));
+    }
+    char ohm = 244;
+    writeStr((String)ohm);
   }
 };
 
