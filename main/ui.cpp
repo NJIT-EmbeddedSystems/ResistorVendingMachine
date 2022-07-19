@@ -338,6 +338,7 @@ void drawResistorCheckout() {
 
 void drawResistorIndicator() {
   drawResistor( uiState.resistorSelect.magnitude, uiState.resistorSelect.exponent );
+  setGreen();
   ledOn( uiState.resistorIndicator.moduleNum, uiState.resistorIndicator.drawerNum );
 }
 

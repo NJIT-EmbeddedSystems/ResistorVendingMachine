@@ -49,6 +49,9 @@ void ledOff(){
     // turn of master decoder, which turns off all LEDs
     //Serial.println("Turn all LED off");
     digitalWrite(MASTER_EN, LOW);
+    analogWrite(R_CTRL, 0);
+    analogWrite(G_CTRL, 0);
+    analogWrite(B_CTRL, 0);
 }
 
 void setGreen(){
