@@ -179,6 +179,16 @@ void update_state( char input ) {
       {
 	      uiState.currentMenu = RESISTOR_INDICATOR;
 		    uiState.stateStatus = REFRESH;
+        int newCount = uiState.resistorSelect.closest.count - uiState.resistorCheckout.numOfResistors.toInt();
+        Serial.print( "Inventory before: " );
+        Serial.print( uiState.resistorSelect.closest.count );
+        Serial.print(", after: " );
+        Serial.println( newCount );
+        /*if( newCount < 0) {
+          sd_update_inventory( 0, uiState.resistorIndicator.moduleNum, uiState.resistorIndicator.drawerNum );
+        } else {
+          sd_update_inventory( newCount, uiState.resistorIndicator.moduleNum, uiState.resistorIndicator.drawerNum );
+        }*/
       } break;
       case BACK:
       {
@@ -338,8 +348,14 @@ void drawResistorCheckout() {
 
 void drawResistorIndicator() {
   drawResistor( uiState.resistorSelect.magnitude, uiState.resistorSelect.exponent );
-  setGreen();
-  ledOn( uiState.resistorIndicator.moduleNum, uiState.resistorIndicator.drawerNum );
+  ledOff();
+  ledOn( (int)uiState.resistorIndicator.moduleNum, (int)uiState.resistorIndicator.drawerNum );
+  if( uiState.resistorSelect.closest.count < 5 ) {
+    setYellow();
+  } else {
+    setGreen();  
+  }
+  
 }
 
 unsigned long resistorStringToInt( String magnitude, String exponent ) {
@@ -409,6 +425,7 @@ void checkInventoryForResistor() {
     uiState.resistorSelect.closest = closestValue;
     uiState.currentMenu = RESISTOR_INVENTORY_NOT_FOUND;
   } else {
+    uiState.resistorSelect.closest = closestValue;
     uiState.resistorSelect.magnitude = closestValue.magnitude;
     uiState.resistorSelect.exponent = closestValue.exponent;
     uiState.resistorIndicator.moduleNum = closestValue.moduleNum;

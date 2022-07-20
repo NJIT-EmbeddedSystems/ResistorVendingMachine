@@ -28,23 +28,23 @@
 #define KEYPAD_R1 22
 #define KEYPAD_R2 24
 #define KEYPAD_R3 26
-#define KEYPAD_R4 28
+#define KEYPAD_R4 30
 
 // LED Control
 #define MASTER_EN 33 // active HIGH
-#define MASTER_S0 30
-#define MASTER_S1 31
-#define MASTER_S2 32
+#define MASTER_S0 5
+#define MASTER_S1 6
+#define MASTER_S2 7
 
 // the idea is to have ALL slave decoders to share select lines
 // because each are only active one at a time
-#define SLAVE_S0 36
-#define SLAVE_S1 37
-#define SLAVE_S2 38
+#define SLAVE_S0 10
+#define SLAVE_S1 11
+#define SLAVE_S2 12
 
 // RGB ctrl pins hooked up to cathodes on LEDs
-#define R_CTRL 3
-#define G_CTRL 4
-#define B_CTRL 5
+#define R_CTRL A0
+#define G_CTRL A1
+#define B_CTRL A2
 
 #endif /* _PINDEF_H */

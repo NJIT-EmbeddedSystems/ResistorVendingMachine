@@ -17,13 +17,14 @@ void sdCard_init() {
     
     startOfLine = 0;
     
-    resistorInventoryFile = SD.open("data.txt");
+    resistorInventoryFile = SD.open("data.txt", O_RDWR);
     if( resistorInventoryFile ) {
       Serial.println( "File Found" );
         //SD.close("data.txt");
     } else {
       Serial.println( "File Not Found" );
     }
+    sd_goto_start();
 }
 
 void moveToCommaElement( int element ) {
@@ -175,6 +176,10 @@ InventoryInfo sd_find_closest_resistor( String magnitude, String exponent ) {
 
   sd_goto_start();
   unsigned long currentResistor = 0, closestResistor = 0;
+  while( sd_read_inventory_count == 0 ) {
+    sd_next_line();
+  }
+  
   closestResistor = sd_read_resistor_value();
   closest.numericValue = closestResistor;
   sd_read_resistor_color_code( &closest.magnitude, &closest.exponent );
@@ -184,6 +189,10 @@ InventoryInfo sd_find_closest_resistor( String magnitude, String exponent ) {
   
   sd_next_line();
   while( (currentResistor = sd_read_resistor_value()) != 0 ) {
+    if( sd_read_inventory_count() == 0 ) {
+      sd_next_line();
+      continue;
+    }
     if( abs(long(resistorValue - currentResistor)) < abs(long(resistorValue - closestResistor)) ) {
       closestResistor = currentResistor;
       closest.numericValue = closestResistor;
@@ -197,4 +206,53 @@ InventoryInfo sd_find_closest_resistor( String magnitude, String exponent ) {
   sd_goto_start();
 
   return closest;
+}
+
+void sd_update_inventory( unsigned newAmount, unsigned moduleNum, unsigned drawerNum ) {
+  unsigned currentModule, currentDrawer;
+  unsigned long pos = 0;
+  sd_goto_start();
+  for(;;) {
+    currentModule = sd_read_module_num();
+    currentDrawer = sd_read_drawer_num();
+    
+    if( currentModule == moduleNum && currentDrawer == drawerNum ) break;
+    
+    sd_next_line();  
+  }
+  
+  pos = resistorInventoryFile.position();
+  moveToCommaElement(3);
+  unsigned long bufferSize = resistorInventoryFile.size() - resistorInventoryFile.position();
+ 
+  char *endOfFile = (char*)calloc( bufferSize+1, sizeof(char) );
+  resistorInventoryFile.read( endOfFile, bufferSize );
+  sd_goto_start();
+
+  resistorInventoryFile.seek( pos );
+  moveToCommaElement(2);
+
+  while( resistorInventoryFile.peek() == " " || resistorInventoryFile.peek() == ',' ) {
+    resistorInventoryFile.read();
+  }
+
+  do {
+    resistorInventoryFile.write( (char)('0' + (newAmount%10)) );
+    Serial.print( "Writing " );
+    Serial.println( (char)('0' + (newAmount%10)) );
+    newAmount /= 10;
+  } while( newAmount != 0 );
+  resistorInventoryFile.write( "," );
+  resistorInventoryFile.write( endOfFile, bufferSize );
+  resistorInventoryFile.write( EOF );
+  free( endOfFile );
+  resistorInventoryFile.flush();
+  sd_goto_start();
+
+  char *file = (char*)calloc( resistorInventoryFile.size()+1, sizeof(char) );
+  resistorInventoryFile.read( file, resistorInventoryFile.size() );
+  Serial.println( file );
+  free( file );
+  
+  sd_goto_start();
 }

@@ -21,5 +21,6 @@ unsigned sd_read_module_num( void );
 unsigned sd_read_drawer_num( void );
 bool sd_next_line( void );
 void sd_goto_start( void );
+void sd_update_inventory( unsigned newAmount, unsigned moduleNum, unsigned drawerNum );
 
 #endif
